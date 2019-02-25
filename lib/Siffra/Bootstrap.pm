@@ -4,19 +4,22 @@ use 5.014;
 use strict;
 use warnings;
 use utf8;
+use Data::Dumper;
 use Log::Any qw($log);
- 
+use Scalar::Util qw(blessed);
+
 BEGIN {
+    use Siffra::Tools;
     use Exporter ();
     use vars qw($VERSION @ISA @EXPORT @EXPORT_OK %EXPORT_TAGS);
-    $VERSION     = '0.01';
-    @ISA         = qw(Exporter);
+    $VERSION = '0.01';
+    @ISA     = qw(Siffra::Tools Exporter);
+
     #Give a hoot don't pollute, do not export more than needed by default
     @EXPORT      = qw();
     @EXPORT_OK   = qw();
     %EXPORT_TAGS = ();
 }
- 
 
 #################### subroutine header begin ####################
 
@@ -36,7 +39,6 @@ See Also   :
 
 #################### subroutine header end ####################
 
-
 =head2 C<new()>
  
   Usage     : $self->block_new_method() within text_pm_file()
@@ -51,46 +53,46 @@ See Also   :
               parameters.
  
 =cut
- 
-sub new
-{
-    my ($class, %parameters) = @_;
 
-    my $self = {};
- 
-    $self = bless ($self, ref ($class) || $class);
+sub new {
+    my ( $class, %parameters ) = @_;
+
+    my $parent = $class->SUPER::new(%parameters);
+
+    my $self = bless( $parent, ref($class) || $class );
 
     $log->info( "new", { progname => $0, pid => $$, perl_version => $], package => __PACKAGE__ } );
- 
+
     return $self;
 }
- 
+
 sub _initialize() {
-	my ( $self, %parameters ) = @_;
-	$log->info( "_initialize", { package => __PACKAGE__ } );
+    my ( $self, %parameters ) = @_;
+    $log->info( "_initialize", { package => __PACKAGE__ } );
 }
 
 sub END {
-	$log->info( "END", { package => __PACKAGE__ } );
+    $log->info( "END", { package => __PACKAGE__ } );
 }
 
 sub DESTROY {
-	my ( $self, %parameters ) = @_;
-	$log->info( 'DESTROY', { package => __PACKAGE__, GLOBAL_PHASE => ${^GLOBAL_PHASE} } );
-	return if ${^GLOBAL_PHASE} eq 'DESTRUCT';
+    my ( $self, %parameters ) = @_;
+    $log->info( 'DESTROY', { package => __PACKAGE__, GLOBAL_PHASE => ${^GLOBAL_PHASE} } );
+    return if ${^GLOBAL_PHASE} eq 'DESTRUCT';
 
-	if ( blessed($self) && $self->isa(__PACKAGE__) ) {
-		$log->alert( "DESTROY", { package => __PACKAGE__, GLOBAL_PHASE => ${^GLOBAL_PHASE}, blessed => 1 } );
-	}
-	else {
-		# TODO
-	}
+    if ( blessed($self) && $self->isa(__PACKAGE__) ) {
+        $log->alert( "DESTROY", { package => __PACKAGE__, GLOBAL_PHASE => ${^GLOBAL_PHASE}, blessed => 1 } );
+    }
+    else {
+        # TODO
+    }
+
+    Siffra::Bootstrap->SUPER::DESTROY;
 }
- 
+
 #################### main pod documentation begin ###################
 ## Below is the stub of documentation for your module.
 ## You better edit it!
- 
 
 =encoding UTF-8
 
@@ -148,10 +150,10 @@ LICENSE file included with this module.
 perl(1).
  
 =cut
- 
+
 #################### main pod documentation end ###################
- 
 
 1;
+
 # The preceding line will help the module return a true value
 

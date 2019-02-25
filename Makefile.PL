@@ -12,15 +12,18 @@ my %WriteMakefileArgs = (
     AUTHOR           => 'Luiz Benevenuto (luiz@siffra.com.br)',
     MIN_PERL_VERSION => '5.014',
     LICENSE          => 'perl',
-    INSTALLDIRS      => ($] < 5.011 ? 'perl' : 'site'),
-    PREREQ_PM => {
-        'strict'       => 0,
-        'warnings'     => 0,
-        'Test::Simple' => 0.44,
-        'Test::More'   => 0,
-        'version'      => 0,
-        'utf8'         => 0,
-        'Log::Any'     => 0,
+    INSTALLDIRS      => ( $] < 5.011 ? 'perl' : 'site' ),
+    PREREQ_PM        => {
+        'strict'        => 0,
+        'warnings'      => 0,
+        'Test::Simple'  => 0.44,
+        'Test::More'    => 0,
+        'version'       => 0,
+        'utf8'          => 0,
+        'Log::Any'      => 0,
+        'Scalar::Util'  => 0,
+        'Data::Dumper'  => 0,
+        'Siffra::Tools' => 0,
     },
     BUILD_REQUIRES => {
         'Test::More'          => 0,
@@ -48,7 +51,7 @@ my %WriteMakefileArgs = (
         )
     ),
     dist  => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
-    clean => { FILES => 'Siffra-Bootstrap-* *.old *.bak' },
+    clean => { FILES    => 'Siffra-Bootstrap-* *.old *.bak' },
 );
 
 WriteMakefile(%WriteMakefileArgs);
