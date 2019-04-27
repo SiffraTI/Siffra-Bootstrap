@@ -21,6 +21,19 @@ use constant {
     DEBUG => $ENV{ DEBUG } // 0,
 };
 
+my %driverConnections = (
+    pgsql => {
+        module => 'DBD::Pg',
+        dsn    => 'DBI:Pg(AutoCommit=>0,RaiseError=>1,PrintError=>0):dbname=%s;host=%s;port=%s',
+    },
+    mysql => {
+        module => 'DBD::mysql',
+    },
+    sqlite => {
+        module => 'DBD::SQLite',
+    },
+);
+
 BEGIN
 {
     binmode( STDOUT, ":encoding(UTF-8)" );
@@ -204,7 +217,7 @@ sub connectDatabase()
     my ( $self, %parameters ) = @_;
     $log->debug( "connectDatabase", { package => __PACKAGE__ } );
 
-    my ( $database, $host, $password, $port, $username, $connection, $alias );
+    my ( $database, $host, $password, $port, $username, $connection, $options, $alias );
 
     $database   = $parameters{ database };
     $host       = $parameters{ host };
@@ -213,19 +226,47 @@ sub connectDatabase()
     $username   = $parameters{ username };
     $connection = $parameters{ connection };
     $alias      = $parameters{ alias } // 'mainDB';
+    $options    = $parameters{ options } // '';
 
-    use DBI;
-    use DBD::Pg;
-    $self->{ databases }->{ connection }->{ $alias } = eval { DBI->connect( "DBI:Pg:dbname=$database;host=$host;port=$port", $username, $password, { RaiseError => 1, PrintError => 0 } ); };
-
-    if ( $@ )
+    my $driverConnection = $driverConnections{ $connection };
+    if ( $driverConnection )
     {
-        $log->error( "Erro ao conectar ao banco [ $username\@$host:$port ]." );
-        $log->debug( $@ );
+        eval {
+            require DBI;
+            require "$driverConnection->{ module }";
+        };
+
+        if ( !defined $self->{ databases }->{ connection }->{ $alias } )
+        {
+            my $dsn = sprintf( $driverConnection->{ dsn }, $database, $host, $port );
+            my ( $scheme, $driver, $attr_string, $attr_hash, $driver_dsn ) = DBI->parse_dsn( $dsn ) or die "Can't parse DBI DSN '$dsn'";
+            my $data_source = "$scheme:$driver:$driver_dsn";
+            $self->{ databases }->{ connection }->{ $alias } = eval { DBI->connect( $data_source, $username, $password, $attr_hash ); };
+
+            if ( $@ )
+            {
+                $log->error( "Erro ao conectar ao banco [ $username\@$host:$port ]." );
+                $log->debug( $@ );
+            }
+        } ## end if ( !defined $self->{...})
+    } ## end if ( $driverConnection...)
+    else
+    {
+        $log->error( "Connection [ $connection ] não existe configuração..." );
+        return FALSE;
     }
 
     return $self->{ databases }->{ connection }->{ $alias };
 } ## end sub connectDatabase
+
+=head2 C<queryDatabase()>
+=cut
+
+sub queryDatabase()
+{
+    my ( $self, %parameters ) = @_;
+
+}
 
 =head2 C<run()>
 =cut
