@@ -92,6 +92,8 @@ sub new
     my $self = $class->SUPER::new( %parameters );
     $self->{ beachmarck }->{ started } = time();
 
+    $self->{ configurations } = \%parameters;
+
     $self->_initialize( %parameters );
     return $self;
 } ## end sub new
@@ -128,7 +130,7 @@ sub loadApplication()
 {
     my ( $self, %parameters ) = @_;
     $log->debug( "loadApplication", { package => __PACKAGE__ } );
-    my $configurationFile = $parameters{ configurationFile };
+    my $configurationFile = $self->{ configurations }->{ configurationFile };
 
     if ( !-e $configurationFile )
     {
