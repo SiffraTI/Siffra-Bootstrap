@@ -166,7 +166,7 @@ sub loadApplication()
     if ( $@ )
     {
         $log->error( "Problemas ao usar o arquivo [ $self->{ configurations }->{ application }->{ fileName } ]..." );
-        return 0;
+        return FALSE;
     }
     else
     {
