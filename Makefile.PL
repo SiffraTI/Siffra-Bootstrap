@@ -12,22 +12,34 @@ my %WriteMakefileArgs = (
     AUTHOR           => 'Luiz Benevenuto (luiz@siffra.com.br)',
     MIN_PERL_VERSION => '5.014',
     LICENSE          => 'perl',
-    INSTALLDIRS      => ($] < 5.011 ? 'perl' : 'site'),
-    PREREQ_PM => {
+    INSTALLDIRS      => ( $] < 5.011 ? 'perl' : 'site' ),
+    PREREQ_PM        => {
+
+        # Default req
         'strict'       => 0,
         'warnings'     => 0,
-        'Test::Simple' => 0.44,
-        'Test::More'   => 0,
-        'version'      => 0,
+        'Carp'         => 0,
         'utf8'         => 0,
+        'Data::Dumper' => 0,
+        'DDP'          => 0,
         'Log::Any'     => 0,
+        'Scalar::Util' => 0,
+        'version'      => 0,
+        # Default req
+
+        'Test::More'    => 0,
+        'Config::Any'   => 0,
+        'IO::Prompter'  => 0,
+        'Siffra::Tools' => 0,
+        'DBI'           => 0,
+        'DBD::Pg'       => 0,
     },
     BUILD_REQUIRES => {
         'Test::More'          => 0,
         'ExtUtils::MakeMaker' => 0,
     },
     (
-        eval { ExtUtils::MakeMaker->VERSION(6.46) }
+        eval { ExtUtils::MakeMaker->VERSION( 6.46 ) }
         ? ()
         : (
             META_MERGE => {
@@ -36,19 +48,19 @@ my %WriteMakefileArgs = (
                 resources      => {
                     homepage   => 'https://siffra.com.br',
                     repository => {
-                        url  => 'git@github.com:lbenevenuto/Siffra-Bootstrap.git',
-                        web  => 'https://github.com/lbenevenuto/Siffra-Bootstrap',
+                        url  => 'git@github.com:SiffraTI/Siffra-Bootstrap.git',
+                        web  => 'https://github.com/SiffraTI/Siffra-Bootstrap',
                         type => 'git',
                     },
                     bugtracker => {
-                        web => 'https://github.com/lbenevenuto/Siffra-Bootstrap/issues',
+                        web => 'https://github.com/SiffraTI/Siffra-Bootstrap/issues',
                     },
                 },
             }
         )
     ),
     dist  => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
-    clean => { FILES => 'Siffra-Bootstrap-* *.old *.bak' },
+    clean => { FILES    => 'Siffra-Bootstrap-* *.old *.bak' },
 );
 
-WriteMakefile(%WriteMakefileArgs);
+WriteMakefile( %WriteMakefileArgs );
