@@ -21,19 +21,6 @@ use constant {
     DEBUG => $ENV{ DEBUG } // 0,
 };
 
-my %driverConnections = (
-    pgsql => {
-        module => 'DBD::Pg',
-        dsn    => 'DBI:Pg(AutoCommit=>0,RaiseError=>1,PrintError=>0):dbname=%s;host=%s;port=%s',
-    },
-    mysql => {
-        module => 'DBD::mysql',
-    },
-    sqlite => {
-        module => 'DBD::SQLite',
-    },
-);
-
 BEGIN
 {
     binmode( STDOUT, ":encoding(UTF-8)" );
@@ -173,9 +160,9 @@ sub loadApplication()
         $self->{ configurations }->{ $_ } = $configAny->{ $configFile }->{ $_ } foreach ( keys %{ $configAny->{ $configFile } } );
     }
 
-    $log->info( "Configurações lidas com sucesso na aplicação [  $self->{ configurations }->{ application }->{ name } ]..." );
+    $log->info( "Configurações lidas com sucesso na aplicação [ $self->{ configurations }->{ application }->{ name } ]..." );
 
-    $log->error( 'Falta passar nome da biblioteca' ) if ( $self->{ configurations }->{ application }->{ package } !~ /^\D/ );
+    $log->error( 'Falta passar nome do package' ) if ( $self->{ configurations }->{ application }->{ package } !~ /^\D/ );
 
     eval "use $self->{ configurations }->{ application }->{ fileName };";    ## Usando o módulo.
 
@@ -194,81 +181,8 @@ sub loadApplication()
         }
     } ## end else [ if ( $@ ) ]
 
-    if ( $self->{ configurations }->{ databases } )
-    {
-        $log->info( "Conectando nos bancos..." );
-
-        while ( my ( $key, $values ) = each( %{ $self->{ configurations }->{ databases } } ) )
-        {
-            if ( !$self->connectDatabase( %$values ) )
-            {
-
-                return FALSE;
-            }
-        } ## end while ( my ( $key, $values...))
-
-    } ## end if ( $self->{ configurations...})
     return TRUE;
 } ## end sub loadApplication
-
-=head2 C<connectDatabase()>
-=cut
-
-sub connectDatabase()
-{
-    my ( $self, %parameters ) = @_;
-    $log->debug( "connectDatabase", { package => __PACKAGE__ } );
-
-    my ( $database, $host, $password, $port, $username, $connection, $options, $alias );
-
-    $database   = $parameters{ database };
-    $host       = $parameters{ host };
-    $password   = $parameters{ password };
-    $port       = $parameters{ port };
-    $username   = $parameters{ username };
-    $connection = $parameters{ connection };
-    $alias      = $parameters{ alias } // 'mainDB';
-    $options    = $parameters{ options } // '';
-
-    my $driverConnection = $driverConnections{ $connection };
-    if ( $driverConnection )
-    {
-        eval {
-            require DBI;
-            require "$driverConnection->{ module }";
-        };
-
-        if ( !defined $self->{ databases }->{ connection }->{ $alias } )
-        {
-            my $dsn = sprintf( $driverConnection->{ dsn }, $database, $host, $port );
-            my ( $scheme, $driver, $attr_string, $attr_hash, $driver_dsn ) = DBI->parse_dsn( $dsn ) or die "Can't parse DBI DSN '$dsn'";
-            my $data_source = "$scheme:$driver:$driver_dsn";
-            $self->{ databases }->{ connection }->{ $alias } = eval { DBI->connect( $data_source, $username, $password, $attr_hash ); };
-
-            if ( $@ )
-            {
-                $log->error( "Erro ao conectar ao banco [ $username\@$host:$port ]." );
-                $log->debug( $@ );
-            }
-        } ## end if ( !defined $self->{...})
-    } ## end if ( $driverConnection...)
-    else
-    {
-        $log->error( "Connection [ $connection ] não existe configuração..." );
-        return FALSE;
-    }
-
-    return $self->{ databases }->{ connection }->{ $alias };
-} ## end sub connectDatabase
-
-=head2 C<queryDatabase()>
-=cut
-
-sub queryDatabase()
-{
-    my ( $self, %parameters ) = @_;
-
-}
 
 =head2 C<run()>
 =cut
