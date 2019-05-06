@@ -153,7 +153,7 @@ sub loadApplication()
     } ## end if ( !-e $configurationFile...)
 
     my @configFiles = ( $configurationFile );
-    my $configAny = Config::Any->load_files( { files => \@configFiles, flatten_to_hash => 1, use_ext => 1 } );
+    my $configAny   = Config::Any->load_files( { files => \@configFiles, flatten_to_hash => 1, use_ext => 1 } );
 
     foreach my $configFile ( keys %$configAny )
     {
@@ -236,7 +236,6 @@ sub END
 sub DESTROY
 {
     my ( $self, %parameters ) = @_;
-    $log->debug( 'DESTROY', { package => __PACKAGE__, GLOBAL_PHASE => ${^GLOBAL_PHASE}, blessed => FALSE } );
     if ( ${^GLOBAL_PHASE} eq 'DESTRUCT' )
     {
         $self->getExecutionInfo() if ( blessed( $self ) && $self->isa( __PACKAGE__ ) );
@@ -249,7 +248,7 @@ sub DESTROY
     }
     else
     {
-        # TODO
+        $log->debug( 'DESTROY', { package => __PACKAGE__, GLOBAL_PHASE => ${^GLOBAL_PHASE}, blessed => FALSE } );
     }
 
     Siffra::Bootstrap->SUPER::DESTROY;
